@@ -1,0 +1,61 @@
+======================
+    Font face mixin
+======================
+
+    @mixin font-face($name, $path, $exts, $local, $local-slug, $weight, $style)
+
+    $name (string) - Font family name used in page (required)
+    $path (string) - path to font family (required)
+    $exts (array) - extensions to add (required)
+    $local (string) - local font family name (on your pc) (optional)
+    $local-slug (string) - local font family name slug (optional)
+    $weight (string) - font family weight, default 400 (optional)
+    $style (string) - font family style, default normal (optional)
+
+======================
+    USAGE
+======================
+    Copy line below, update names, weight and style. leave just woff and woff2, because we don't support old browsers
+    @include font-face("Font family name", "../fonts/font-file-name",  woff2 woff, "local font fanme", "local-font-slug" weight, style);
+	
+
+======================
+    DEMO
+======================
+@include font-face("Open Sans", "../fonts/OpenSans-Regular", woff2 woff, "Open Sans", "OpenSans");
+@include font-face("Open Sans", "../fonts/OpenSans-Bold", woff2 woff, "Open Sans Bold", "OpenSans-Bold", 700, normal);
+
+*/
+@mixin font-face($name, $path, $exts: eot woff2 woff ttf svg, $local: null, $local-slug: null, $weight: null, $style: null ) {
+    $src: null;
+
+    $extmods: (
+            eot: "?",
+            svg: "#" + str-replace($name, " ", "_")
+    );
+
+    $formats: (
+            otf: "opentype",
+            ttf: "truetype"
+    );
+
+    @if $local {
+        $src: append($src, local($local));
+    }
+    @if $local-slug {
+        $src: append($src, local($local-slug));
+    }
+
+    @each $ext in $exts {
+        $extmod: if(map-has-key($extmods, $ext), $ext + map-get($extmods, $ext), $ext);
+        $format: if(map-has-key($formats, $ext), map-get($formats, $ext), $ext);
+        $src: append($src, url(quote($path + "." + $extmod)) format(quote($format)), comma);
+    }
+
+    @font-face {
+        font-family: quote($name);
+        font-style: $style;
+        font-weight: $weight;
+        src: $src;
+    }
+}
